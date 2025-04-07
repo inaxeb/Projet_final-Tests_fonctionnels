@@ -15,9 +15,22 @@ class UserManager {
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             throw new InvalidArgumentException("Email invalide.");
         }
-
-        $stmt = $this->db->prepare("INSERT INTO users (name, email) VALUES (:name, :email)");
+    
+        $stmt = $this->db->prepare("INSERT IGNORE INTO users (name, email) VALUES (:name, :email)");
         $stmt->execute(['name' => $name, 'email' => $email]);
+    
+        if ($stmt->rowCount() == 0) {
+            echo json_encode(["message" => "L'utilisateur existe déjà."]);
+        }
+    }
+    
+
+    public function addRandomUsers(int $count): void {
+        for ($i = 0; $i < $count; $i++) {
+            $name = 'User ' . ($i + 1);
+            $email = 'user' . uniqid() . '@test.com';
+            $this->addUser($name, $email);
+        }
     }
 
     public function removeUser(int $id): void {
